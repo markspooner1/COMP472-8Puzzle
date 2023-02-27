@@ -19,19 +19,34 @@ goalcoordinates = {'B':[1,1], 1:[0,0], 2:[1,0],
 goal = [1,2,3,8,'B',4,7,6,5]
 cols = 3
 class Node:
-    def __init__(self, parent, state, depth):
+    def __init__(self, parent, state, depth, heuristic = None, searchType = None):
         self.children = []
         self.parent = parent
         self.state = state
         self.depth = depth
-        self.pathCost = self.permutationInversion()
+        self.heuristicName = heuristic
+        self.searchType = searchType
+        
+        if heuristic == "HD":
+            self.pathCost = self.hammingDistance()
+            if searchType == 4:
+                self.pathCost += self.depth
+        elif heuristic == "MD":
+            self.pathCost = self.manhattanDistance()
+            if searchType == 4:
+                self.pathCost += self.depth
+        else:
+            self.pathCost = self.permutationInversion()
+            if searchType == 4:
+                self.pathCost += self.depth
+
     def isGoal(self):
        return self.state == goal
     def moveRight(self, index):
         if index % cols < 2:
             childState = self.state.copy()
             childState[index], childState[index + 1]  =  self.state[index + 1], 'B'
-            child = Node(self, childState, self.depth + 1)
+            child = Node(self, childState, self.depth + 1, self.heuristicName, self.searchType)
             self.children.append(child)
     def moveLeft(self, index):
         if index % cols > 0:
@@ -39,7 +54,7 @@ class Node:
             childState = self.state.copy()
             childState[index] = tempLeftNum
             childState[index - 1] = 'B' 
-            child = Node(self, childState, self.depth + 1)
+            child = Node(self, childState, self.depth + 1, self.heuristicName, self.searchType)
             self.children.append(child)
     def moveUp(self, index):
         if index - cols >= 0:
@@ -47,7 +62,7 @@ class Node:
             childState = self.state.copy()
             childState[index] = tempUpNum
             childState[index - 3] = 'B'
-            child = Node(self, childState, self.depth + 1)
+            child = Node(self, childState, self.depth + 1, self.heuristicName, self.searchType)
             self.children.append(child)
     def moveDown(self, index):
         # check if i + col < 9
@@ -56,7 +71,7 @@ class Node:
             childState = self.state.copy()
             childState[index] = tempNumDown
             childState[index + 3] = 'B'
-            child = Node(self, childState, self.depth + 1)
+            child = Node(self, childState, self.depth + 1, self.heuristicName, self.searchType)
             self.children.append(child)
     def generateSuccessors(self):
         index = self.state.index('B')
@@ -95,28 +110,26 @@ class Node:
             goalPosX, goalPosY = goalcoordinates[val]
             manDistance += abs(currentPosY - goalPosY) + abs(currentPosX - goalPosX)     
         return manDistance
-    def permutationInversion(state):
+    def permutationInversion(self):
         #for each value in state
         #for each value to its right
             #if when we check the goal state, value2 is actually supposed to be to the left of value, we increment 
             # if index of value2 in goal state is < current index of value in goal state increment++ 
         sum = 0
-        for i, val in enumerate(state):
+        for i, val in enumerate(self.state):
             if val == 'B':
                 continue
-            for j in range(i + 1, len(state)):
+            for j in range(i + 1, len(self.state)):
                 if val == 'B':
                     continue
                 index1 = goal.index(val)
-                index2 = goal.index(state[j])
+                index2 = goal.index(self.state[j])
                 if index2 < index1:
                     sum+=1
         return sum
-                
+   
 
 
-    def fFunctionHeuristic(self):
-        return self.manhattanDistance() + self.depth
 
 
 
