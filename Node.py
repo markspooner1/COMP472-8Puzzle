@@ -9,13 +9,24 @@ Max children is 4
     - as a list: [1, 2, 3, 8, B, 4, 7, 6, 5]
  """
  # Will need to set root parent to null
+import random
 coordinates = {0:[0,0], 1:[1,0], 2:[2,0],
                3:[0,1], 4:[1,1], 5:[2,1],
                6:[0,2], 7:[1,2], 8:[2,2]}
 goalcoordinates = {'B':[1,1], 1:[0,0], 2:[1,0],
                3:[2,0], 4:[2,1], 5:[2,2],
                6:[1,2], 7:[0,2], 8:[0,1]}
-
+neighbors = {
+    0: [1, 3],
+    1: [0, 2, 4],
+    2: [1, 5],
+    3: [0, 4, 6],
+    4: [1, 3, 5, 7],
+    5: [2, 4, 8],
+    6: [3, 7],
+    7: [4, 6, 8],
+    8: [5, 7]
+}
 goal = [1,2,3,8,'B',4,7,6,5]
 cols = 3
 class Node:
@@ -30,15 +41,23 @@ class Node:
         if heuristic == "HD":
             self.pathCost = self.hammingDistance()
             if searchType == 4:
-                self.pathCost += self.depth
+                self.f_value = self.depth + self.pathCost
         elif heuristic == "MD":
             self.pathCost = self.manhattanDistance()
             if searchType == 4:
-                self.pathCost += self.depth
+                self.f_value = self.depth + self.pathCost
+        elif heuristic == "A1":
+            self.pathCost = self.linearConfictsAndMD()
+            if searchType == 4:
+                self.f_value = self.depth + self.pathCost
+        elif heuristic == "IH":
+            self.pathCost = self.inAdmissableHeuristic()
+            if searchType == 4:
+                self.f_value = self.depth + self.pathCost
         else:
             self.pathCost = self.permutationInversion()
             if searchType == 4:
-                self.pathCost += self.depth
+                self.f_value = self.depth + self.pathCost
 
     def isGoal(self):
        return self.state == goal
@@ -94,6 +113,7 @@ class Node:
         print("\n")
 
     def hammingDistance(self):
+        
         # Count the number of tiles out of place, dont count the blank tile
         hammingDistance = 0
         for i, val in enumerate(self.state):
@@ -127,6 +147,21 @@ class Node:
                 if index2 < index1:
                     sum+=1
         return sum
+    def linearConfictsAndMD(self):
+        conflicts = 0
+        for i, val in enumerate(self.state):
+            neighborsOf = neighbors[i]
+            for j in neighborsOf:
+                if goal.index(val) == j and goal.index(self.state[j]) == i:
+                    conflicts+=1
+        return conflicts + self.manhattanDistance()
+
+    def inAdmissableHeuristic(self):
+        return self.permutationInversion() + self.manhattanDistance() + random.uniform(1,2)
+
+                    
+
+
    
 
 
