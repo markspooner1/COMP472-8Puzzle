@@ -11,131 +11,152 @@ class Search:
         self.type = int(type)
         self.root = Node(None, puzzle, 0, heuristic, int(type))
         self.nodesVisited = 0
+        self.closed = []
+        if type == 1:
+            self.open = []
+        else:
+            self.open = deque();
     def search(self):
         print(self.type)
         if self.type == 1:
-            print(self.DFS())
+            self.DFS()
         elif self.type == 2:
-            print(self.BFS())
+            self.BFS()
         elif self.type == 3:
-            print(self.BestFS())
+            self.BestFS()
         elif self.type == 4:
-            print(self.AStar())
+            self.AStar()
             
     def DFS(self):
         
-        # root.printPuzzle()
-        # root.generateSuccessors()
-        # for child in root.children:
-        #     child.printPuzzle()
-        open = [self.root]
-        closed = []
-        while(len(open) > 0):
-            x = open.pop()  
+        # DFS is implemented with a stack
+        self.open.append(self.root)
+        while(len(self.open) > 0):
+            x = self.open.pop()  
             
-            
+            # If goal is reached, trace path and return
             if x.isGoal():
-                self.tracePath(x, x.depth, len(closed))
-                return "Goal reached, length of search path: " + str(x.depth)
+                self.tracePath(x, x.depth, len(self.closed))
+                return
+            # If goal is not reached, generate children of x and add to top of stack if child is not on open or closed
             else:
                 x.generateSuccessors()
-                closed.append(x)
+                self.closed.append(x)
                 for child in x.children:
-                    if not self.isOnOpenOrClosed(open, closed, child.state):
-                        open.append(child)
+                    if not self.isOnOpenOrClosed(child.state):
+                        self.open.append(child)
     def BFS(self):
-        open = deque([self.root])
-        closed = []
         
-        while(len(open) > 0):
-            x = open.popleft()
+        # BFS is implemented with a queue
+        self.open.append(self.root)        
+        while(len(self.open) > 0):
+            x = self.open.popleft()
+
+            # if goal is reached, trace path and return
             if x.isGoal():
                 x.printPuzzle()
-                self.tracePath(x, x.depth, len(closed))
-                return "Goal reached, length of search path: " + str(x.depth)
+                self.tracePath(x, x.depth, len(self.closed))
+                return
+               
+            
+            # if goal is not reached, generate children of x and add to end of queue if child is not on open or self.closed
             else:
                 x.generateSuccessors()
-                closed.append(x)
+                self.closed.append(x)
                 for child in x.children:
-                    if not self.isOnOpenOrClosed(open, closed, child.state):
-                        open.append(child)
-        return "Fail"
+                    if not self.isOnOpenOrClosed(child.state):
+                        self.open.append(child)
 
     def BestFS(self):
-        open = deque([self.root])
-        closed = []
-        
-        while(len(open) > 0):
+        # BestFS is implemented with a priority queue sorted by path cost
+        self.open.append(self.root)
 
-            x = open.popleft()
-            closed.append(x)
         
+        while(len(self.open) > 0):
+
+            x = self.open.popleft()
+            self.closed.append(x)
+            # if goal is reached, trace path and return
             if x.isGoal():
-                print("Goal reached, length of search path: " + str(x.depth))
-                self.tracePath(x, x.depth, len(closed))
+                self.tracePath(x, x.depth, len(self.closed))
                 return
+            
+            # if goal is not reached, generate children of x and add to end of queue if child is not on self.open or closed
             else:
                 x.generateSuccessors()
                 for child in x.children:
-                    if not self.isOnOpenOrClosed(open, closed, child.state):
-                        open.append(child)
-                open = deque(sorted(open, key=lambda x: x.pathCost))
+                    if not self.isOnOpenOrClosed(child.state):
+                        self.open.append(child)
+                self.open = deque(sorted(self.open, key=lambda x: x.pathCost))
 
     def AStar(self):
-        open = deque([self.root])
-        closed = []
+        # AStar is implemented with a priority queue sorted by f value (path cost + heuristic)
+        self.open.append(self.root)
+       
         
-        while(len(open) > 0):
-            x = open.popleft()
+        while(len(self.open) > 0):
+            x = self.open.popleft()
+            # if goal is reached, trace path and return
             if x.isGoal():
-                self.tracePath(x, x.depth, len(closed))
+                self.tracePath(x, x.depth, len(self.closed))
                 return 
+            # if goal is not reached, generate children of x
             else:
-                closed.append(x)
+                self.closed.append(x)
                 x.generateSuccessors()
                 for child in x.children:
-                    if not self.isOnOpenOrClosed(open, closed, child.state, "Astar"):
-                        open.append(child)
-                    else:
-                        existingNeighbour = self.findNodeOnOpenOrClosedList(open, child.state)
-                        if existingNeighbour is None:
-                            pass
-                        elif child.f_value < existingNeighbour.f_value:
-                            existingNeighbour.f_value = child.f_value
-                            existingNeighbour.parent = child.parent
-                        
-                    
-                open = deque(sorted(open, key=lambda x: x.f_value))
+                    # check if child is already on Open or self.closed list
+                    ExistsOnClosed = self.findNodeOnOpenOrClosedList(self.closed, child.state)
+                    ExistsOnOpen = self.findNodeOnOpenOrClosedList(self.open, child.state)
 
-        
-    def isOnOpenOrClosed(self,open, closed, puzzle, type = None):
+                    # if child is already on closed, check if child has a lower f value than the one on closed
+                    # if it does, we found a more optimal path to the node on closed, need to reconsider it so add it to open
+                    if ExistsOnClosed is not None:
+                        if ExistsOnClosed[0].f_value > child.f_value:
+                            open.append(child)
+                            del self.closed[ExistsOnClosed[1]]
+
+                    # if child is already on open, check if child has a lower f value than the one on open
+                    # replace the one on open with the child if it does
+                    elif ExistsOnOpen is not None:
+                        if ExistsOnOpen[0].f_value > child.f_value:
+                            self.open.append(child)
+                            del self.open[ExistsOnOpen[1]]
+                    else:
+                        self.open.append(child)
+                        
+                # sort open list by f value
+                self.open = deque(sorted(self.open, key=lambda x: x.f_value))
+
+    # check if puzzle is on open or closed list
+    def isOnOpenOrClosed(self,puzzle, type = None):
         res1 = False
         res2 = False
-        for node in open:
+        for node in self.open:
             if node.state == puzzle:
                 res1 = True
-        for node in closed:
+        for node in self.closed:
             if node.state == puzzle:
                 res2 = True
-        if type == "Astar":
-    
-            return res1 and res2
-        else:
-            return res1 or res2
+        return res1 or res2
 
-
+    # check if node exists on open or closed, if so return the index and node its found at
     def findNodeOnOpenOrClosedList(self, list, puzzle):
-        for node in list:
+        for i,node in enumerate(list):
             if node.state == puzzle:
-                return node
+                return [node,i]
         return None
 
-
+    # trace path from goal to start
     def tracePath(self, node, depth, length):
         path = []
+
+        # loop until we find start state
         while(node != None):
             path.append(node)
             node = node.parent
+
+        # print path from start state to goal state
         print("\nPath from start to goal:")
         for i in range(len(path)-1, -1, -1):
             print(
@@ -146,15 +167,15 @@ class Search:
             V
             """)
             path[i].printPuzzle()
-        print("Nodes visited " + str(length))
-        print("Goal reached, length of soluton path: " + str(depth))
+        print("Length of search path (Total nodes visited): " + str(length))
+        print("Length of solution path: " + str(depth))
 
 
 
         
 
 if __name__ == "__main__":
-    start = [5,1,4,7,'B',6,3,8,2]
+    start = [3,6,4,'B',1,2,8,7,5]
     type = input(
     """Enter search: 
         1 -> Depth First Search
@@ -175,13 +196,3 @@ if __name__ == "__main__":
         heuristic = None
     search = Search(type, start, heuristic)
     search.search()
-
-    
-
-    """
-    heuristics
-    ----------
-        -> Hamming Distance -> HD
-        -> Manhattan Distance -> MD
-        -> Permutation Inversions -> PI
-    """
