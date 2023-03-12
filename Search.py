@@ -113,7 +113,7 @@ class Search:
                     # if it does, we found a more optimal path to the node on closed, need to reconsider it so add it to open
                     if ExistsOnClosed is not None:
                         if ExistsOnClosed[0].f_value > child.f_value:
-                            open.append(child)
+                            self.open.append(child)
                             del self.closed[ExistsOnClosed[1]]
 
                     # if child is already on open, check if child has a lower f value than the one on open
@@ -174,25 +174,3 @@ class Search:
 
         
 
-if __name__ == "__main__":
-    start = [3,6,4,'B',1,2,8,7,5]
-    type = input(
-    """Enter search: 
-        1 -> Depth First Search
-        2 -> Breadth First Search
-        3 -> Best First Search
-        4 -> A Star Search
-    (Enter either 1 2 3 or 4): """)
-    if int(type) == 3 or int(type) == 4:
-        heuristic = input("""
-        Enter Heuristic:
-            HD -> Hamming Distance 
-            MD -> Manhattan Distance 
-            PI -> Permutation Inversions
-            A1 -> My Custom heuristic from Theory Assignment 1
-            IH -> Inadmissable Heuristic
-        (Enter either HD, MD, PI, A1, or IH): """)
-    else: 
-        heuristic = None
-    search = Search(type, start, heuristic)
-    search.search()
