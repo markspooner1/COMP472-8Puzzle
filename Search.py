@@ -8,23 +8,23 @@ from collections import deque
 # 7 6 5
 class Search:
     def __init__(self, type, puzzle, heuristic = None):
-        self.type = int(type)
-        self.root = Node(None, puzzle, 0, heuristic, int(type))
+        self.type = type
+        self.root = Node(None, puzzle, 0, heuristic, type)
         self.nodesVisited = 0
         self.closed = []
-        if type == 1:
+        if type == "A*":
             self.open = []
         else:
             self.open = deque();
     def search(self):
         print(self.type)
-        if self.type == 1:
+        if self.type == "DFS":
             self.DFS()
-        elif self.type == 2:
+        elif self.type == "BFS":
             self.BFS()
-        elif self.type == 3:
+        elif self.type == "BestFS":
             self.BestFS()
-        elif self.type == 4:
+        elif self.type == "A*":
             self.AStar()
             
     def DFS(self):
