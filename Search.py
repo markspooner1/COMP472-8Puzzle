@@ -12,7 +12,7 @@ class Search:
         self.root = Node(None, puzzle, 0, heuristic, type)
         self.nodesVisited = 0
         self.closed = []
-        if type == "A*":
+        if type == "DFS":
             self.open = []
         else:
             self.open = deque();
@@ -24,7 +24,7 @@ class Search:
             self.BFS()
         elif self.type == "BestFS":
             self.BestFS()
-        elif self.type == "A*":
+        elif self.type == "Astar":
             self.AStar()
             
     def DFS(self):

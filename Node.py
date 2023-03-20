@@ -35,7 +35,7 @@ class Node:
             self.pathCost = self.inAdmissableHeuristic()
         else:
             self.pathCost = self.permutationInversion()
-        if searchType == "A*":
+        if searchType == "Astar":
             self.f_value = self.depth + self.pathCost
     def isGoal(self):
        return self.state == goal
