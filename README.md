@@ -6,7 +6,7 @@
     8 0 4
     7 6 5     
 #### Usage
-Run `main.py` with the puzzle as string of digits using B the blank tile, the type of search algorithm - `DFS`, `BFS`, `BestFS`, `A*` and the heuristic:  `HD`  = Hamming Distance, `MD` = Manhattan Distance, `PI`  = Permutation Inversions, 
+Run `main.py` with the puzzle as string of digits (using B as the blank tile), the type of search algorithm - `DFS`, `BFS`, `BestFS`, `Astar` and the heuristic:  `HD`  = Hamming Distance, `MD` = Manhattan Distance, `PI`  = Permutation Inversions, 
 	              `A1`  = (linear conflict + manhattan distance) or `None` if the search is uninformed (DFS, BFS)
 #### Ex
 ```
